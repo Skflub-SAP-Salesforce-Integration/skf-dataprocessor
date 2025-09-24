@@ -1,0 +1,65 @@
+#%RAML 1.0
+title: Data Processor Process API
+description: Data processor to process the IDoc XML to Salesforce Object
+version: v1
+
+uses: 
+  GlobalResources: /exchange_modules/org.mule.templates/accelerator-global-resources/2.2.0/accelerator-global-resources.raml
+
+types:
+  IDoc: !include libraries/examples/DEBMAS.xml
+
+/ping:
+  displayName: Ping
+  get:
+    is: [ GlobalResources.PingResponse ]
+    description: Get the current health status of this API
+
+/debmas:
+  displayName: getDebmasXml
+  post:
+    description: Creates new account/s  
+    body:
+      text/xml:
+        description: IDoc XML
+
+/account:
+  displayName: Push Account
+  post:
+    description: Creates new account/s  
+    body:
+      text/xml:
+        description: IDoc XML
+
+/salesarea:
+  displayName: Push Sales Area
+  post:
+    description: Creates new salesarea/s  
+    body:
+      text/xml:
+        description: IDoc XML
+
+/partnerfunction:
+  displayName: Push Partner Function
+  post:
+    description: Creates new partnerfunction/s  
+    body:
+      text/xml:
+        description: IDoc XML
+
+/product:
+  displayName: Push Product
+  post:
+    description: Creates new product/s  
+    body:
+      text/xml:
+        description: IDoc XML
+
+
+/order:
+  displayName: Push Order
+  post:
+    description: Creates new orders/s  
+    body:
+      text/xml:
+        description: IDoc XML

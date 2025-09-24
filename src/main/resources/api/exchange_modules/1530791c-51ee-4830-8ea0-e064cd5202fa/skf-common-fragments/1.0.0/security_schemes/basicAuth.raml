@@ -1,0 +1,35 @@
+#%RAML 1.0 SecurityScheme
+type: Basic Authentication
+description:  Basic authentication, secured by username and password
+describedBy:
+  headers:
+    Authorization:
+      required: true
+      type: string
+      description: Base64-encoded of username and password
+      example: "username:password"
+  responses:
+    401:
+      description: Unauthorized
+      body:
+        application/json:
+              example: |
+                {
+                  "error": "Unauthorized access"
+                }
+    403:
+          description: Forbidden
+          body:
+            application/json:
+              example: |
+                {
+                  "error": "Access Forbidden"
+                }
+    500:
+          description: Internal Server Error
+          body:
+            application/json:
+              example: |
+                {
+                  "error": "Internal Server Error"
+                }

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    <apikit:config name="dataprocessor-papi-config" api="dataprocessor-papi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="38b60dcd-1f8a-4b62-b9fd-24ac9cc02492" >
+		<http:request-connection host="api.status.salesforce.com" />
+	</http:request-config>
+	<flow name="dataprocessor-papi-main">
+        <http:listener path="/api/*" config-ref="dataprocessor-papi-http-listener">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="dataprocessor-papi-config" />
+    </flow>
+    <flow name="get:\ping:dataprocessor-papi-config">
+		<flow-ref doc:name="salesforce-status-sub-flow" doc:id="ae0abc01-1280-4e83-aa70-d22adb60cc15" name="salesforce-status-sub-flow" />
+    </flow>
+    <flow name="post:\account:text\xml:dataprocessor-papi-config">
+		<logger level="INFO" doc:name="Logger" doc:id="38cb674f-31af-49f0-a4f7-9220890397cc" message='#["Received XML from DEBMAS Downstream SAPI"]' />
+		<flow-ref doc:name="data-processor-flow" doc:id="d8451019-b5d4-45d7-880c-eb7572bb7d22" name="data-processor-flow" />
+		<ee:transform doc:name="Transform Message" doc:id="010e71a0-52d2-427c-b85b-9cc5b5c1e79f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+    <flow name="post:\order:text\xml:dataprocessor-papi-config">
+		<logger level="INFO" doc:name="Logger" doc:id="82236f6c-fc7a-4706-bfa8-d0a12af31ff3" message='#["Received XML from ORDER Downstream SAPI"]' />
+		<flow-ref doc:name="send-order-to-salesforce-flow" doc:id="c9583cfa-7969-47d4-b87d-873dd3ae6b0f" name="send-order-to-salesforce-flow" />
+    </flow>
+    <flow name="post:\partnerfunction:text\xml:dataprocessor-papi-config">
+        <logger level="INFO" message="post:\partnerfunction:text\xml:dataprocessor-papi-config" />
+    </flow>
+    <flow name="post:\product:text\xml:dataprocessor-papi-config">
+		<logger level="INFO" doc:name="Logger" doc:id="e580d5f3-eb44-4d92-97af-4bb53ff4d45d" message='#["Received XML from MATMAS Downstream SAPI"]' />
+		<flow-ref doc:name="send-product-to-salesforce-flow" doc:id="23cc0b9c-bd46-45d1-93b4-9121129d5a7a" name="send-product-to-salesforce-flow" />
+    </flow>
+    <flow name="post:\salesarea:text\xml:dataprocessor-papi-config">
+        <logger level="INFO" message="post:\salesarea:text\xml:dataprocessor-papi-config" />
+    </flow>
+    <flow name="post:\debmas:text\xml:dataprocessor-papi-config">
+        <logger level="INFO" message="post:\debmas:text\xml:dataprocessor-papi-config" />
+    </flow>
+</mule>

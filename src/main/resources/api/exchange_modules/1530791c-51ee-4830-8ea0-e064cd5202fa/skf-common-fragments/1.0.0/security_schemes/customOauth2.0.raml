@@ -1,0 +1,36 @@
+#%RAML 1.0 SecurityScheme
+
+type: x-oauth-custom
+
+description: Oauth Token Based Security
+describedBy:
+  headers:
+    x-client-id:
+      description: Client Id in base 64 format
+    x-client-secret:
+      description: Client Secret in base 64 format
+  responses:
+    401:
+      description: Unauthorized
+      body:
+        application/json:
+              example: |
+                {
+                  "error": "Unauthorized access"
+                }
+    403:
+          description: Forbidden
+          body:
+            application/json:
+              example: |
+                {
+                  "error": "Access Forbidden"
+                }
+    500:
+          description: Internal Server Error
+          body:
+            application/json:
+              example: |
+                {
+                  "error": "Internal Server Error"
+                }

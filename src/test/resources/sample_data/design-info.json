@@ -1,0 +1,9 @@
+{
+  "sampleData": {
+    "44530dac-e5ed-453e-894f-23b18ccd6ed2": {
+      "vars-salesareaID": "sample_data/defaultstringtype_1.dwl",
+      "payload": "sample_data/debmas07.xml",
+      "vars-accountID": "sample_data/defaultstringtype.dwl"
+    }
+  }
+}

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule
+	xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	<http:listener-config
+		name="dataprocessor-papi-http-listener">
+		<http:listener-connection host="0.0.0.0"
+			port="${http.port}" />
+	</http:listener-config>
+	<configuration-properties
+		doc:name="Configuration properties"
+		doc:id="b21a85ca-fbe2-44f1-a9af-0feed00556d5" file="properties\config-properties-${env}.yaml" />
+	<configuration doc:name="Configuration"
+		doc:id="797a31f6-ee52-42d6-bfd0-0d53182ebc3b"
+		defaultErrorHandler-ref="global-error-handler" />
+
+	<salesforce:sfdc-config
+		name="SKF_Salesforce_Sandbox" doc:name="Salesforce Config"
+		doc:id="0e6d658c-928f-4c0a-8694-d82b24e1a182">
+		<salesforce:basic-connection
+			username="${Salesforce.Username}" password="${Salesforce.Password}"
+			securityToken="${Salesforce.SecurityToken}"
+			url="${Salesforce.AuthURL}" />
+	</salesforce:sfdc-config>
+
+	<http:request-config
+		name="HTTP_Request_configuration_SALESAREA"
+		doc:name="HTTP Request configuration"
+		doc:id="3cbb85d9-5f9a-4888-90fc-a199abc001c4" basePath="/api">
+		<http:request-connection
+			host="${salesareasapi.host}" port="${salesareasapi.port}"
+			protocol="HTTPS" />
+	</http:request-config>
+
+	<http:request-config
+		name="HTTP_Request_configuration_PARTNERFUNCTION"
+		doc:name="HTTP Request configuration"
+		doc:id="91d63af5-b0a5-42de-b419-085e9b579a00" basePath="/api">
+		<http:request-connection
+			host="${partnerfuncsapi.host}" port="${partnerfuncsapi.port}"
+			protocol="HTTPS" />
+	</http:request-config>
+
+	<http:request-config
+		name="HTTP_Request_configuration_ACCOUNT"
+		doc:name="HTTP Request configuration"
+		doc:id="6ed37c85-ddf9-478b-98b9-102b008e602b" basePath="/api">
+		<http:request-connection
+			host="${accountssapi.host}" port="${accountssapi.port}"
+			protocol="HTTPS" />
+	</http:request-config>
+
+	<http:request-config
+		name="HTTP_Request_configuration_ORDER"
+		doc:name="HTTP Request configuration"
+		doc:id="e36f5550-0181-48f9-b69c-813d861a375b" basePath="/api">
+		<http:request-connection protocol="HTTPS"
+			host="${ordersapi.host}" port="${ordersapi.port}" />
+	</http:request-config>
+
+	<http:request-config
+		name="HTTP_Request_configuration_PRODUCT"
+		doc:name="HTTP Request configuration"
+		doc:id="4e69bd92-7b27-4adc-8786-ccf0fba17e4e" basePath="/api">
+		<http:request-connection protocol="HTTPS"
+			host="${productsapi.host}" port="${productsapi.port}" />
+	</http:request-config>
+	<global-property doc:name="Global Property" doc:id="56f96b6c-180c-404c-923a-10b8d599b95e" name="env" value="uat" />
+	<api-gateway:autodiscovery apiId="${api.instance}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="227cc0e9-417f-4f88-9221-b351d48a3d3c" flowRef="dataprocessor-papi-main" />
+</mule>

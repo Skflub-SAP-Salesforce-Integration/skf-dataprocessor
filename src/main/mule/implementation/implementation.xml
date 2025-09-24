@@ -1,0 +1,741 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="7e01397a-38e4-4d98-ab02-eb4b1feb2bd9" />
+	<validation:config name="Validation_Config1" doc:name="Validation Config" doc:id="dbf8b443-8856-43a0-89b3-49ad3395ed7a" />
+	<sub-flow name="salesforce-status-sub-flow" doc:id="29a47d2d-6602-414d-a4f0-8746e8c2b950">
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="9b276186-13dc-4fef-ae4c-ab6e385c03d9" >
+			<salesforce:query doc:name="Get Organization Details for the Environment" doc:id="6ef8aa2b-0b7f-41ff-8fe6-9e558801f95c" config-ref="SKF_Salesforce_Sandbox">
+			<salesforce:salesforce-query><![CDATA[Select InstanceName,Country, LanguageLocaleKey, IsSandbox from Organization]]></salesforce:salesforce-query>
+		</salesforce:query>
+		</until-successful>
+		<ee:transform doc:name="Transform Message" doc:id="5954441e-c3cb-40bf-b6cf-bcbfdd557f74" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="3daecf59-f519-4d9d-ae90-68af413a89a4" >
+			<http:request method="GET" doc:name="Request" doc:id="c3e405e0-e506-4e87-9329-871beca7867f" config-ref="HTTP_Request_configuration" path="/v1/instances/{instancenumber}/status">
+			<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"instancenumber" : payload.InstanceName[0]
+}]]]></http:uri-params>
+		</http:request>
+		</until-successful>
+		<ee:transform doc:name="Transform Message" doc:id="f20d98ce-1475-409e-8f2e-584247742c0a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  apiName: "skf-dataprocessor-papi",
+  apiVersion: "1.0.0",
+  timestamp: now(),
+  dependencies: 
+    {
+      "Salesforce": {
+			    "Instance Number": payload.key,
+			    "location": payload.location,
+			    "environment": payload.environment,
+			    "releaseVersion": payload.releaseVersion,
+			    "status": payload.status,
+			    "isActive": payload.isActive
+			    }
+    
+    }			
+}
+ 
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	
+	<flow name="extract-pricebook" doc:id="8b94dea3-5973-44c0-afe4-4a153d30db99" >
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="e174a73f-f46f-4324-b67c-358649e725be" >
+			<salesforce:query doc:name="Query" doc:id="62eef66f-26d9-4c25-add4-7cbe4befe315" config-ref="SKF_Salesforce_Sandbox">
+			<salesforce:salesforce-query><![CDATA[SELECT Id from Pricebook2 where Name = 'Standard Price Book']]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"matnr" : vars.matnr
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		</until-successful>
+
+	</flow>
+	<flow name="data-processor-flow"
+		doc:id="2b528580-7a5e-418f-8a20-e27f4f721637">
+		<flow-ref doc:name="sendAccountFlow"
+			doc:id="2faa747a-d6e7-44eb-aef8-a90a441109b4" name="send-account-flow"
+			target="accountflowresponse" />
+		<choice doc:name="Choice" doc:id="912d15c8-efc1-433d-80dc-c59043827752" >
+			<when expression="#[payload..E1KNVVM != null]">
+				<flow-ref doc:name="sendSalesAreaFlow" doc:id="7d3eee12-0e3e-41de-9558-4a50ab4990ac" name="send-salesarea-flow" target="salesarearesponse" />
+				<choice doc:name="Choice" doc:id="dbbc8d64-ac78-4fd3-81eb-c8f238eeafb5" >
+					<when expression="#[payload..E1KNVPM != null]">
+						<flow-ref doc:name="sendPartnerFunctionFlow" doc:id="73280fb6-2a37-4544-9b16-910357d69643" name="send-partnerfunction-flow" target="partnerfunctionflowresponse" />
+					</when>
+					<otherwise >
+						<set-variable value='#["The Partner function from SAP is Null"]' doc:name="Set Partner Function Variable" doc:id="ee462535-a1e5-43bc-a3e6-ce2c77aabc2f" variableName="partnerfunctionflowresponse"/>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise>
+				<set-variable value='#["The Sales Area from SAP is Null"]' doc:name="Set Sales Area Payload" doc:id="471571b5-7ece-4d23-a84c-cdcae64aece0" variableName="salesarearesponse"/>
+				<set-variable value='#["The Partner Function from SAP is Null"]' doc:name="Set Partner Function Payload" doc:id="d4cf5309-82d4-4747-9d99-9b7cfdb42710" variableName="partnerfunctionflowresponse" />
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Transform Message" doc:id="45168bb2-25f5-4d30-a9ed-7be6fd2ce246" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Account Flow": vars.accountflowresponse,
+	"Sales Area Flow": vars.salesarearesponse,
+	"Partner Function Flow": vars.partnerfunctionflowresponse
+}
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="41a34ffa-ef37-4c5f-9e3c-44c8f0ef5f04" message="#[payload]"/>
+	</flow>
+	<flow name="send-account-flow" doc:id="6e8c4d9f-5244-4601-b559-c1e01a1fbd3a" >
+		<ee:transform doc:name="Transform SAP XML to JSON" doc:id="b1e0ab17-70e0-4637-bb78-2dd80f0d8054" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+//var e1knvpmFilter = (parvw) -> payload..*E1KNVPM filter ($.PARVW == parvw) map (e1knvpm) -> e1knvpm.KUNN2
+
+//var e1knvpmMultiFilter = (parvw, defpa) -> payload..*E1KNVPM filter ($.PARVW == parvw and $.DEFPA == defpa) map (e1knvpm) -> e1knvpm.KUNN2
+
+---
+[{
+
+    //("Account_Management_Team__c": "Account Management (User)") if(e1knvpmFilter("VE")[0] != null),
+    //"Price_Group__c": payload..IDOC.E1KNA1M.E1KNVVM.KONDA[0] default "",
+    //"Customer_Schema__c": payload..IDOC.E1KNA1M.E1KNVVM.KALKS[0] default "",
+    "Search_Term__c": payload..IDOC.E1KNA1M.SORTL[0] default "",
+    "Delivery_Block__c": payload..IDOC.E1KNA1M.LIFSD[0] default "",
+    "Billing_Block__c": payload..IDOC.E1KNA1M.FAKSD[0] default "",
+    //"ABC_Classification__c": payload..IDOC.E1KNA1M.E1KNVVM.KLABC[0] default "",
+    "Military_Use__c": payload..IDOC.E1KNA1M.MILVE[0] default "",
+    //"Shipping_Condition__c": payload..IDOC.E1KNA1M.E1KNVVM.VSBED[0] default "",
+	"Name": (payload..IDOC.E1KNA1M.NAME1[0] default "") ++ " " ++ (payload..IDOC.E1KNA1M.NAME2[0] default "") ++ " " ++ (payload..IDOC.E1KNA1M.NAME3[0] default "") ++ " " ++ (payload..IDOC.E1KNA1M.NAME4[0] default "") ,
+	"BillingStreet": payload..IDOC.E1KNA1M.STRAS[0] default "",
+	"BillingCity": payload..IDOC.E1KNA1M.ORT01[0] default "",
+	"BillingPostalCode": payload..IDOC.E1KNA1M.PSTLZ[0] default "",
+	"BillingCountry": payload..IDOC.E1KNA1M.LAND1[0] default "",
+	"ShippingStreet": payload..IDOC.E1KNA1M.STRAS[0] default "",
+	"ShippingCity": payload..IDOC.E1KNA1M.ORT01[0] default "",
+	"ShippingPostalCode": payload..IDOC.E1KNA1M.PSTLZ[0] default "",
+	"ShippingCountry": payload..IDOC.E1KNA1M.LAND1[0] default "",
+	//"Sold_To_Party__c": payload..IDOC.E1KNA1M.E1KNB1M.PARTN[0] default "",
+	//"Ship_To_Party__c": payload..IDOC.E1KNA1M.E1KNB1M.PARTN[0] default "",
+	"Account_Group__c": payload..IDOC.E1KNA1M.KTOKD[0] default "",
+	"Email_Invoicing__c": payload..IDOC.E1KNA1M.SMTP_ADDR[0] default "",
+	"CurrencyIsoCode": payload..IDOC.E1KNA1M.WAERS[0] default "EUR",
+	"SAP_Industry__c":payload..IDOC.E1KNA1M.BRSCH[0] default "",
+	"Billing_PO_Box__c": payload..IDOC.E1KNA1M.PFACH[0] default "",
+	"Billing_PO_Box_Postal_Code__c": payload..IDOC.E1KNA1M.PSTL2[0] default "",
+	"Billing_PO_Box_City__c": payload..IDOC.E1KNA1M.PFACH[0] default "",
+	"External_Id__c": payload..IDOC.E1KNA1M.KUNNR[0],
+	"AccountNumber": payload..IDOC.E1KNA1M.KUNNR[0] default "",
+	"VAT_Number__c": payload..IDOC.E1KNA1M.STCEG[0] default "",
+	"Shipping_PO_Box__c": payload..IDOC.E1KNA1M.PFACH[0] default "",
+	"Shipping_PO_Box_PostalCode__c": payload..IDOC.E1KNA1M.PSTL2[0] default "",
+	"Shipping_PO_Box_City__c": payload..IDOC.E1KNA1M.PFACH[0] default "",
+	//"Type":payload..IDOC.E1KNA1M.E1KNVVM.KDGRP[0] default "",
+	"Phone":payload..IDOC.E1KNA1M.TELF1[0] default "",
+	"Fax":payload..IDOC.E1KNA1M.TELFX[0] default "",
+	"SKF_Industrial_Code__c":payload..IDOC.E1KNA1M.BRAN1[0] default "",
+	//"Incoterms__c": payload..IDOC.E1KNA1M.E1KNVVM.INCO1[0] default "",
+	//"Incoterm_location__c":payload..IDOC.E1KNA1M.E1KNVVM.INCO2[0] default "",
+	"Is_Active__c": if(payload..IDOC.E1KNA1M.AUFSD[0] == null) true else false,
+	("Order_Block__c": payload..IDOC.E1KNA1M.AUFSD[0]) if(payload..IDOC.E1KNA1M.AUFSD[0] != null),
+	//"Delivery_Plant__c":payload..IDOC.E1KNA1M.E1KNVVM.VWERK[0] default "",
+	//"Different_Payment_Terms__c": payload..IDOC.E1KNA1M.E1KNVVM.ZTERM[0] default ""
+    //("Account_Management__r": {"External_Id__c": e1knvpmFilter("VE")[0] default ""})if(e1knvpmFilter("VE")[0] != null),
+    //("Customer_Service__r": {"External_Id__c": e1knvpmFilter("ZM")[0] default ""})if(e1knvpmFilter("ZM")[0] != null),
+	//("Customer_Service_Team__c": "Customer Service (User)") if(e1knvpmFilter("ZM")[0] != null),
+    //("Sales_Representative_1__r": {"External_Id__c": e1knvpmFilter("VE")[0] default "", "type":"User"})if(e1knvpmFilter("VE")[0] != null),
+	//("Sales_Representative_2__r": {"External_Id__c": e1knvpmFilter("YE")[0] default "", "type":"User"})if(e1knvpmFilter("YE")[0] != null)
+	
+}]
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="2e73fd09-684f-4a27-a36f-e610d85b9f41" message="#[payload]"/>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="85fff342-9466-4ae3-babf-f3dd859b2d07" >
+			<http:request method="POST" doc:name="Request" doc:id="9a89c8aa-4cb8-4d72-911b-861b9a2fcccc" config-ref="HTTP_Request_configuration_ACCOUNT" path="/v1/account" />
+		</until-successful>
+		<choice doc:name="Choice" doc:id="f0cc31bb-3a54-4876-bde1-4eb982745fed" >
+			<when expression="#[payload.items[0].exception.localizedMessage != null and payload.successful == false and&#10;&#10;payload.items[0].exception.localizedMessage != 'You are creating a duplicate record. We recommend you use an existing record instead. DUPLICATES_DETECTED']">
+				<logger level="INFO" doc:name="Logger" doc:id="fc82c15d-cae9-4d73-be61-01c3ea92f265" message="#[payload.items[0].exception.localizedMessage]"/>
+				<raise-error doc:name="Raise error" doc:id="cb14a4d6-73db-471f-ba3c-ae9c03ac25bb" type="ANY" description="Execution failed for Account, Check runtime logs for details."/>
+			</when>
+		</choice>
+		<flow-ref doc:name="Flow Reference" doc:id="a65226bb-4f00-4d9e-a2d9-1caa6f9eec24" name="choice-router-sub-flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="0873a1a1-6241-4c85-8d39-0a63e16748e9" message="#[payload]"/>
+	</flow>
+	<flow name="send-salesarea-flow" doc:id="95f2a3f0-818a-45cb-a63a-95fe99dcdd8b">
+		<ee:transform doc:name="Transform Message" doc:id="80164269-2543-4b0b-be2e-c288a9a8a1b9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload..*E1KNVVM map (item,index)->{
+   "Account_Number__c": payload..IDOC.E1KNA1M.KUNNR[0],
+   "Customer_Schema__c": item.KALKS default "",
+   "Price_Group__c": item.KONDA default "",
+   "Delivery_Plant__c": item.VWERK default "",
+   "Shipping_Condition__c": item.VSBED default "",
+   "ABC_Classification__c": item.KLABC default "",
+   "Customer_Group__c": item.KDGRP default "",
+   "Division__c":item.SPART,
+   "Distribution_Channel__c":item.VTWEG,
+    "Account__r":{
+    	External_Id__c: payload..IDOC.E1KNA1M.KUNNR[0]
+    },
+   "Incoterms__c":item.INCO1 default "",
+   "Incoterms_Location__c":item.INCO2 default "",
+   "Payment_Condition__c":item.ZTERM default "",
+   "External_Id__c":(payload..IDOC.E1KNA1M.KUNNR[0] default "") ++ "_" ++ (item.VKORG default "") ++ "_" ++ (item.VTWEG default "") ++ "_" ++ (item.SPART default ""),
+   "Sales_Organization__c":item.VKORG default ""
+   }
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="c2af6810-d683-4cfe-9c5b-1c8764a73e58" >
+			<http:request method="POST" doc:name="Request" doc:id="4d9156de-ba7b-4b2a-aa3d-41226d6f07ec" config-ref="HTTP_Request_configuration_SALESAREA" path="/v1/salesarea" target="salesarearesponse" />
+		</until-successful>
+		<ee:transform doc:name="Transform Message" doc:id="31b48dd2-bf6d-4f05-91d1-7383f124bc5e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Strings
+output application/json
+---
+vars.salesarearesponse.items map ((item, index) ->{
+ 
+ 
+        "success": item.successful,
+        "xml_e1knvvm_index": index,
+        "message": item.message,
+		("SalesArea_Id": item.id)if (item.exception == null)
+ 
+} )]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="salesareaOutput" ><![CDATA[%dw 2.0
+output application/json
+---
+payload.items map ((item, index) ->{
+
+
+        "success": item.successful,
+        "xml_e1knvvm_index": index,
+        "message": item.message,
+        ("Id": item.id) if(item.id != null),
+        ("duplicate_check": if (item.exception.localizedMessage contains "Duplicate") true else false) if(item.exception != null),
+
+
+} )]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="b13a6adc-d86f-489c-958c-cb333e20408a" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="221cff98-b52f-4f1a-9450-5dea5d733bac" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    onefailure: payload.success contains false,
+    onesuccess: payload.success contains true,
+    SalesArea_Id : payload.SalesArea_Id[0]
+ 
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="salesareaid" ><![CDATA[payload.SalesArea_Id[0]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="99424377-4f32-4a75-9087-049a2d4f8c92">
+			<when expression="#[payload.onefailure == true]">
+				<logger level="INFO" doc:name="Logger" doc:id="5bc3b324-098d-49ce-be29-84fbf84d11bb" message="#[payload.items[0].exception.localizedMessage]" />
+				<raise-error doc:name="Raise error" doc:id="f23407f3-bdb9-447f-b240-f7e612aaed25" type="ANY" description="Execution failed for Sales Area, Check runtime logs for details." />
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="e0690c13-afe6-45a5-9f93-df137dad4c3c">
+					<ee:message>
+						<ee:set-payload><![CDATA[vars.salesarearesponse]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="flowvar" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<foreach doc:name="For Each" doc:id="2dc0a3ad-6bef-48a4-bb3b-ae7fe5119be8" collection="#[payload.items]">
+			<flow-ref doc:name="Flow Reference" doc:id="92b1289a-055b-4774-af03-77972e58941b" name="choice-router-sub-flow"/>
+			<ee:transform doc:name="Transform Message" doc:id="4116bdcc-1846-4a71-8a9e-9bcf1cfb8b8f" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="flowvar" ><![CDATA[%dw 2.0
+output application/json
+---
+vars.flowvar ++ payload]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</foreach>
+		<ee:transform doc:name="Transform Message" doc:id="6ef3c5fb-5e8f-42e6-b080-65b3a80ba2d8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[vars.flowvar]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="95a976f2-8854-4a69-bf8d-729bcf9484f8" message="#[payload]" />
+	</flow>
+	<flow name="send-partnerfunction-flow" doc:id="f4e70c54-e7bc-46d1-97a5-2b95a5fe9636" >
+		<ee:transform doc:name="Transform SAP XML to JSON" doc:id="00a6b3ca-a0ae-46fc-bc42-454b650f89cf" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var personNumberFilter = (parvw) -> payload..*E1KNVPM filter ($.PARVW == parvw) map (e1knvpm) -> e1knvpm.KUNN2
+
+---
+payload..*E1KNVVM map (item,index)->{
+   "KNVP": item.*E1KNVPM filter ((itempf) -> itempf.KUNN2 != null) map (itempf,indexpf)->{
+        ("SAP_Customer_Number__c": itempf.KUNN2) if (itempf.PARVW != 'VE' and itempf.PARVW != 'YC' and itempf.PARVW != 'ZE' and itempf.PARVW != 'ZM' and  itempf.PARVW != 'ZO' and itempf.PARVW != 'ZQ' and itempf.PARVW != 'ZR' and itempf.PARVW != 'ZT' and itempf.PARVW != 'ZV' and itempf.PARVW != 'YE' and itempf.PARVW != 'Z8' and itempf.PARVW != 'ZI' and itempf.PARVW != 'Z9'),
+        ("Person_Number__c": itempf.KUNN2) if (itempf.PARVW == 'VE' or itempf.PARVW == 'YC' or itempf.PARVW == 'ZE' or itempf.PARVW == 'ZM' or  itempf.PARVW == 'ZO' or itempf.PARVW == 'ZQ' or itempf.PARVW == 'ZR' or itempf.PARVW == 'ZT' or itempf.PARVW == 'ZV' or itempf.PARVW == 'YE' or itempf.PARVW == 'Z8' or itempf.PARVW == 'ZI' or itempf.PARVW == 'Z9'),
+         "Street__c": payload..IDOC.E1KNA1M.STRAS[0] default "",
+		 "City__c": payload..IDOC.E1KNA1M.ORT01[0] default "",
+		 "PostCode__c": payload..IDOC.E1KNA1M.PSTLZ[0] default "",
+		 "Country__c": payload..IDOC.E1KNA1M.LAND1[0] default "",
+        "Partner_Function__c":itempf.PARVW,
+        "Sales_Organization__c":item.VKORG,
+        "Division__c":item.SPART,
+        "Distribution_Channel__c":item.VTWEG,
+        "Default_Ship_To_Party__c" : if(itempf.PARVW == 'WE' and itempf.DEFPA == 'X') true else false,
+    	"Default_Condition_Partner__c": if(itempf.PARVW == 'ZK' and itempf.DEFPA == 'X') true else false,
+        "Delivering_Plant__c":item.VWERK,
+        "Sales_Area__r":{
+                    External_Id__c: (payload..IDOC.E1KNA1M.KUNNR[0] default "") ++ "_" ++ (item.VKORG default "") ++ "_" ++ (item.VTWEG default "") ++ "_" ++ (item.SPART default "")
+    },
+        "Partner_Function_Account__r":{
+                        External_Id__c: payload..IDOC.E1KNA1M.KUNNR[0]
+                },
+                "External_Id__c" : (payload..IDOC.E1KNA1M.KUNNR[0] default "") ++ "_" ++ (item.VKORG default "") ++ "_" ++ (item.VTWEG default "") ++ "_" ++ (item.SPART default "") ++(if (itempf.PARVW == 'VE' or itempf.PARVW == 'YC' or itempf.PARVW == 'ZE' or  itempf.PARVW == 'ZO' or itempf.PARVW == 'ZQ' or itempf.PARVW == 'ZR' or itempf.PARVW == 'ZT' or itempf.PARVW == 'ZV' or itempf.PARVW == 'ZM' or itempf.PARVW == 'YE' or itempf.PARVW == 'Z8' or itempf.PARVW == 'ZI' or itempf.PARVW == 'Z9') "" else  ("_" ++  itempf.KUNN2 default "")) ++ "_" ++ itempf.PARVW
+    }
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="9cdc66b1-97cc-4d34-a850-8d1ff0be01cb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+//flatten(payload.KNVP)
+flatten(payload.KNVP) filter ($ != null) map ((item) -> item)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="5abad5cc-47b6-4df8-8be5-89dffced45c4" >
+			<http:request method="POST" doc:name="Request" doc:id="97417cab-c8a2-4b84-9e7e-89abbb1c5ad2" config-ref="HTTP_Request_configuration_PARTNERFUNCTION" path="/v1/partnerfunction" />
+		</until-successful>
+		<flow-ref doc:name="Flow Reference" doc:id="a99b35dd-1f2b-4a1b-96f6-5a3d08f78bfa" name="choice-router-sub-flow" />
+		<logger level="INFO" doc:name="Logger" doc:id="ca4620dc-1370-43f5-ad93-5f2adb4f31f8" message="#[payload]"/>
+	</flow>
+	<flow name="send-order-to-salesforce-flow" doc:id="f0273b30-a60c-4a06-8b41-26b0856e502a" >
+		<ee:transform doc:name="Transform Message" doc:id="ce042830-0ada-4be8-823b-0f3782fbbc19">
+			<ee:message>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="sourcexml" ><![CDATA[payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="extract-pricebook-entry-and-product" doc:id="4edf3044-73c9-41d2-a902-4364d0a47243" name="extract-pricebook-entry-and-product" target="pricebookandproductVar" />
+		<ee:transform doc:name="Transform Message" doc:id="1d22f97c-0304-4195-980c-204521c95617" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="productVar" ><![CDATA[%dw 2.0
+output application/json
+---
+read(vars.pricebookandproductVar."ProductIds", "application/json")]]></ee:set-variable>
+				<ee:set-variable variableName="pricebookEntryVar" ><![CDATA[%dw 2.0
+output application/json
+---
+read(vars.pricebookandproductVar."PricebookEntryIds", "application/json")]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="extract-pricebook" doc:id="d276cc7b-be81-459d-9612-7f0c73cfba73" name="extract-pricebook" target="pricebookVar"/>
+		<ee:transform doc:name="Transform SAP XML to JSON" doc:id="aeb40baa-20bc-4447-88a9-9aa290fbe75f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var idoc = payload..IDOC[0]
+var e1edk14Filter = (qualf) -> payload..*E1EDK14 filter ($.QUALF == qualf) map (e1edka1) -> e1edka1.ORGID
+var e1edka1Filter = (parvw) -> payload..*E1EDKA1 filter ($.PARVW == parvw) map (e1edka1) -> e1edka1.PARTN
+var e1edk03Filter = (iddat) -> payload..*E1EDK03 filter ($.IDDAT == iddat) map (e1edka1) -> e1edka1.DATUM as Date {format: "yyyyMMdd"} as String {format: "yyyy-MM-dd"}
+var e1edk02Filter = (qualf) -> payload..*E1EDK02 filter ($.QUALF == qualf) map (e1edka02) -> e1edka02.BELNR
+var e1edk02DateFilter = (qualf) -> payload..*E1EDK02 filter ($.QUALF == qualf) map (e1edka02) -> e1edka02.DATUM as Date {format: "yyyyMMdd"} as String {format: "yyyy-MM-dd"}
+---
+{
+  "PONumber__c": e1edk02Filter("001")[0] default "",
+  "PODate__c": e1edk02DateFilter("001")[0] default "",
+  "POType__c": idoc.E1EDK01.BSART default "",
+  "Shipping_Condition__c": idoc.E1EDK01.VSART_BEZ default "",
+  "External_Id__c": idoc.E1EDK01.BELNR default "",
+  "Sales_Organization__c": e1edk14Filter("008")[0] default "NA",
+  "Division__c": e1edk14Filter("006")[0] default "NA",
+  "Distribution_Channel__c": e1edk14Filter("007")[0] default "NA",
+  "SAP_Order_Number__c": idoc.E1EDK01.BELNR default "",
+  "SAP_Order_Type__c": e1edk14Filter("012")[0] default "",
+  "Ship_to_Account__c": e1edka1Filter("WE")[0] default "",
+  "Bill_to_Account__c": e1edka1Filter("RE")[0] default "",
+  "Pay_to_Account__c": e1edka1Filter("RG")[0] default "",
+  "Sales_Document_Date__c": e1edk03Filter("012")[0],
+  "Requested_Delivery_Date__c": e1edk03Filter("002")[0],
+  "Payment_Condition__c": idoc.E1EDK01.ZTERM default "NA",
+  "Incoterms__c": (payload..*E1EDK17 filter ($.QUALF == "001") map (e1edka1) -> e1edka1.LKOND)[0] default "",
+  "CurrencyIsoCode": idoc.E1EDK01.CURCY,
+  "Account": {"External_Id__c": e1edka1Filter("AG")[0] default ""},
+  "Status": "Draft",
+  "Pricebook2Id": vars.pricebookVar[0].Id,
+  "EffectiveDate": idoc.E1EDK03.DATUM as Date {format: "yyyyMMdd"} as String {format: "yyyy-MM-dd"}
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+			</ee:variables>
+		</ee:transform>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="91841e3c-8497-4db3-850d-790e392ab556" >
+			<http:request method="PUT" doc:name="Send JSON to /order Salesforce Orders SAPI" doc:id="fbb42d19-47dc-4ac7-9334-7ec3424a9e3a" config-ref="HTTP_Request_configuration_ORDER" path="/v1/order" />
+		</until-successful>
+		<ee:transform doc:name="Transform Message" doc:id="2b0ddebb-f694-4595-b715-ff5b69dfc072" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="orderIdVar" ><![CDATA[payload.items.id[0]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="choice-router-sub-flow" doc:id="3d2cb4e2-b9fc-4c9d-acc9-7a051ebcbadc" name="choice-router-sub-flow" target="orderresponseVar"/>
+		<ee:transform doc:name="Transform Message" doc:id="986ed2a2-1423-4f0b-9808-3100febc0d22" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[vars.sourcexml]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="0d6caf58-1c93-4188-84e9-58b0f9b0ea05" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var e1edp19Filter = (qualf) -> payload..*E1EDP19 filter ($.QUALF == qualf) map (e1edp19) -> e1edp19.KTEXT
+var e1edp19Filter2 = (qualf) -> payload..*E1EDP19 filter ($.QUALF == qualf) map (e1edp19) -> e1edp19.IDTNR
+var e1edp03Filter = (iddat) -> payload..*E1EDP03 filter ($.IDDAT == iddat) map (e1edp03) -> e1edp03.DATUM as Date {format: "yyyyMMdd"} as String {format: "yyyy-MM-dd"}
+---
+payload.IDOC.*E1EDP01 map (value,index) -> {
+ 	"External_Id__c": vars.orderIdVar ++ "_" ++ value.POSEX ,
+    "SAP_Position_Number__c": value.POSEX,
+    "Position_Type__c": value.PSTYV,
+    "Product2Id": vars.productVar.*ProductId[index],
+    "PricebookEntryId": vars.pricebookEntryVar.*PricebookentryId[index],
+    "Description": e1edp19Filter("002")[0],
+    "Quantity": value.MENGE,
+    "OrderId": vars.orderIdVar,
+    "UnitPrice": value.VPREI,
+    "Acknowledged_Date__c": value.E1EDP20.EDATU as Date {format: "yyyyMMdd"} as String {format: "yyyy-MM-dd"},
+    "Acknowledged_Quantity__c":  value.E1EDP20.WMENG,
+    "Requested_Delivery_Date__c": e1edp03Filter("023")[0]
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="4b3734af-00d1-4b34-8d9c-891187c217e7" >
+			<http:request method="PUT" doc:name="Send JSON to /OrderItem Salesforce Orders SAPI" doc:id="a912abe9-b1da-4a6f-b98e-5d4c838f6bc7" config-ref="HTTP_Request_configuration_ORDER" path="/v1/orderitem" />
+		</until-successful>
+		<flow-ref doc:name="choice-router-sub-flow" doc:id="d78f8d5d-f132-4dc8-a6bc-db86eb5d7fbf" name="choice-router-sub-flow" target="orderItemresponseVar" />
+		<ee:transform doc:name="Transform Message" doc:id="b27c1d41-ba9c-47cf-ae6f-0c601febd791" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"ORDER RESPONSE": vars.orderresponseVar,
+	"ORDER ITEM RESPONSE": vars.orderItemresponseVar
+	
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="6a23d84a-f41a-4c73-a332-ea7ae9133859" message="#[payload]" />
+		
+	</flow>
+	<flow name="send-product-to-salesforce-flow" doc:id="5eafb52b-d8a0-47de-b7fd-90044600a7d8" >
+		<ee:transform doc:name="Transform Product SAP XML to JSON" doc:id="1b44c000-029c-4650-8162-3612c7d57f92">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+[{
+			"Import_Code_No__c": if (payload..IDOC.E1MARAM.E1MARCM.STAWN[0] != null) payload..IDOC.E1MARAM.E1MARCM.STAWN[0] as String else "" ,
+			"Country_Of_Origin__c": if (payload..IDOC.E1MARAM.E1MARCM.HERKL[0] != null) payload..IDOC.E1MARAM.E1MARCM.HERKL[0] as String else "",
+			"Dimension_Unit__c": if (payload..IDOC.E1MARAM.MEABM[0] != null) payload..IDOC.E1MARAM.MEABM[0] as String else "",
+			"Volume_Unit__c": if (payload..IDOC.E1MARAM.VOLEH[0] != null) payload..IDOC.E1MARAM.VOLEH[0] as String else "",
+            "External_Id__c": if (payload..IDOC.E1MARAM.MATNR[0] != null) payload..IDOC.E1MARAM.MATNR[0] as String else "",
+            "Name":if (payload..IDOC.E1MARAM.E1MAKTM.MAKTX[0] != null) payload..IDOC.E1MARAM.E1MAKTM.MAKTX[0] as String else "" ,
+            "SAP_Material_Number__c": if (payload..IDOC.E1MARAM.MATNR[0] != null) payload..IDOC.E1MARAM.MATNR[0] as String else "",
+            "ProductCode":  if (payload..IDOC.E1MARAM.MATNR[0] != null) payload..IDOC.E1MARAM.MATNR[0] as String else "",
+            "Product_Group__c": if (payload..IDOC.E1MARAM.MATKL[0] != null) payload..IDOC.E1MARAM.MATKL[0] as String else "",
+            "General_Position_Type__c": if (payload..IDOC.E1MARAM.MTPOS_MARA[0] != null) payload..IDOC.E1MARAM.MTPOS_MARA[0] as String else "",
+            "Material_Status__c": if (payload..IDOC.E1MARAM.MSTAE[0] != null) payload..IDOC.E1MARAM.MSTAE[0] as String else "",
+      		"Designation__c": if (payload..IDOC.E1MARAM.E1MAKTM.MAKTX[0] != null) payload..IDOC.E1MARAM.E1MAKTM.MAKTX[0] as String else "" ,
+			"PartCode__c": if (payload..IDOC.E1MARAM.E1MAKTM.MAKTX[0] != null) payload..IDOC.E1MARAM.E1MAKTM.MAKTX[0] as String else "",
+			"Volume__c": if (payload..IDOC.E1MARAM.VOLUM[0] != null) payload..IDOC.E1MARAM.VOLUM[0] as String else "",
+			"Material_Group__c": if (payload..IDOC.E1MARAM.MATKL[0] != null) payload..IDOC.E1MARAM.MATKL[0] as String else "",
+			"Material_Family__c": if (payload..IDOC.E1MARAM.MATKL[0] != null) payload..IDOC.E1MARAM.MATKL[0] as String else "",
+			"Sales_Status__c":  if (payload..IDOC.E1MARAM.MSTAV[0] != null) payload..IDOC.E1MARAM.MSTAV[0] as String else "", 	
+			"Net_Weight__c": if (payload..IDOC.E1MARAM.NTGEW[0] != null) payload..IDOC.E1MARAM.NTGEW[0] as String else "", 
+			"Gross_Weight__c": if (payload..IDOC.E1MARAM.BRGEW[0] != null) payload..IDOC.E1MARAM.BRGEW[0] as String else "",  
+			"Weight_Unit__c": if (payload..IDOC.E1MARAM.GEWEI[0] != null) payload..IDOC.E1MARAM.GEWEI[0] as String else "",   
+			"Width__c" : if (payload..IDOC.E1MARAM.BREIT[0] != null) payload..IDOC.E1MARAM.BREIT[0] as String else "",    
+			"Length__c" : if (payload..IDOC.E1MARAM.LAENG[0] != null) payload..IDOC.E1MARAM.LAENG[0] as String else "",    
+			"Height__c" : if (payload..IDOC.E1MARAM.HOEHE[0] != null) payload..IDOC.E1MARAM.HOEHE[0] as String else "",
+			"Product_Hierarchy__c" : if (payload..IDOC.E1MARAM.E1MVKEM.PRODH[0] != null) payload..IDOC.E1MARAM.E1MVKEM.PRODH[0] as String else ""		
+}]
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="5a9e0f2c-7f1c-4e25-91b4-179fb898a6d6" >
+			<http:request method="POST" doc:name="Send JSON to /PRODUCT Salesforce SAPI" doc:id="65870f4a-c3ec-4130-82e7-c769cb5263f0" path="/v1/product" config-ref="HTTP_Request_configuration_PRODUCT" />
+		</until-successful>
+		<flow-ref doc:name="choice-router-sub-flow" doc:id="b6895ece-7001-47e6-899c-7a6963ee8d59" name="choice-router-sub-flow" />
+		<ee:transform doc:name="Transform Message" doc:id="3c74e1a2-e157-48c9-956e-4114f9588964" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="productid" ><![CDATA[payload.recordId]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="5b88eadd-696b-401f-bf37-3769ced4ac41" message="#[payload]" />
+	
+</flow>
+	<sub-flow name="choice-router-sub-flow" doc:id="759a8aa0-8d60-4236-8085-29d4d9848114">
+		<choice doc:name="Choice" doc:id="7cf44a17-9bf7-4a79-80ff-6885f2cf88c2">
+			<when expression="#[payload.items[0].payload.created == true and payload.items[0].exception.localizedMessage == null]">
+				<ee:transform doc:name="Transform Message" doc:id="98233d9e-7536-4f65-9899-38a783cb57aa">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload.*items map ((item, index) -> {
+    "Message": "Record Created Successfully in Salesforce",
+    "recordId": item..payload.id
+
+
+})]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression="#[payload.items[0].payload.created == false and payload.items[0].exception.localizedMessage == null]">
+				<ee:transform doc:name="Transform Message" doc:id="67ec98a0-610d-4dea-996b-848a29627d30">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload.*items map ((item, index) -> {
+    "Message": "As the record/s are present in the system, they are updated successfully in Salesforce, find IDs below",
+    "recordId": item..payload.id
+
+
+})]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression="#[payload.items[0].exception.localizedMessage != null and payload.successful == false]">
+				<ee:transform doc:name="Transform Message" doc:id="eaf35509-10c6-4522-8248-8c797831e4cf">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+	"Message":"There was an Exception",
+	"Details": payload.items[0].exception.localizedMessage,
+	"StatusCode": payload.items[0].statusCode,
+	"Successful": payload.successful
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="6f6601f1-d5f2-448e-8574-e5bcd2cf79ce" message="#[payload]"/>
+				<raise-error doc:name="Raise error" doc:id="bd1cfe68-8efb-4d5f-bd4e-cdfcbcfe9451" type="ANY" description="There was an Error in flow. Please check Mule Runtime logs for errors. login here : https://eu1.anypoint.mulesoft.com"/>
+			</when>
+			<when expression="#[payload.payload.created == true and payload.exception.localizedMessage == null]">
+				<ee:transform doc:name="Transform Message" doc:id="c1cda969-7cee-416f-b9fc-25f2cb82c0bb">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "Message": "Record Created Successfully in Salesforce",
+    "recordId": payload.payload.id
+
+
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			
+</when>
+			<when expression="#[payload.payload.created == false and payload.exception.localizedMessage == null]">
+				<ee:transform doc:name="Transform Message" doc:id="34d6ab88-26e3-44e5-b691-727000aaef44">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+ {
+    "Message": "As the record is present in the system, it was updated successfully in Salesforce",
+    "recordId": payload.payload.id
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			
+</when>
+			<when expression="#[payload.exception.localizedMessage != null and payload.successful == false]">
+				<ee:transform doc:name="Transform Message" doc:id="8f69c2eb-4da7-406d-a79e-2dd02a75c89d">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+	"Message":"There was an Exception",
+	"Details": payload.exception.localizedMessage,
+	"StatusCode": payload.statusCode,
+	"Successful": payload.successful
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="ac26f158-1506-4f76-a176-409afad20c16" message="#[payload]"/>
+				<raise-error doc:name="Raise error" doc:id="1010809e-f049-4b2e-a8d5-92e773093da2" type="ANY" description="There was an Error in the flow. Please check Mule Runtime logs for errors. login here : https://eu1.anypoint.mulesoft.com"/>
+			
+</when>
+			<otherwise>
+				<ee:transform doc:name="Transform Message" doc:id="a95d9375-e3af-44f3-ad5a-db87475104f7">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<flow name="extract-pricebook-entry-and-product" doc:id="7ec49820-f0cf-4a0f-bae7-1f8347eb13c6">
+		<ee:transform doc:name="Transform Message" doc:id="700c8760-b62e-484d-877d-3865d92411f9">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var e1edp19Filter2 = (qualf) -> payload..*E1EDP19 filter ($.QUALF == qualf) map (e1edp19) -> e1edp19
+---
+e1edp19Filter2("002")]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="sourceXML"><![CDATA[%dw 2.0
+output application/json
+---
+payload..*E1EDP19]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<set-variable doc:name="Set Variable" doc:id="2ff1b277-5d12-488d-b321-372802036ca2" variableName="PricebookEntryIds" value="{" />
+		<set-variable doc:name="Set Variable" doc:id="9b27a6b9-b276-44ef-af5c-cf0c6649ba3e" variableName="productVar" value="{" />
+		<foreach doc:name="For Each" doc:id="c9681135-5779-49a0-80b6-7ed4eaaaabf8">
+			<until-successful maxRetries="5" doc:name="Until Successful" doc:id="0c84ed40-a3c7-4b1b-a134-74fe2f8bedea" >
+				<salesforce:query doc:name="Query" doc:id="7773a351-45e0-4d18-a9c5-76ac9e3c7fea" config-ref="SKF_Salesforce_Sandbox">
+				<salesforce:salesforce-query><![CDATA[SELECT Id from PricebookEntry where Product2.External_Id__c = ':matnr']]></salesforce:salesforce-query>
+				<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"matnr" : payload.IDTNR
+}]]]></salesforce:parameters>
+			</salesforce:query>
+			</until-successful>
+			<ee:transform doc:name="Transform Message" doc:id="ac6534af-c37e-4fc5-aec1-f6164970406c">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+vars.sourceXML]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="PricebookEntryIds"><![CDATA[%dw 2.0
+output application/java
+---
+vars.PricebookEntryIds ++ "\"PricebookentryId\" :" ++ "\"" ++ payload.Id[0] ++ "\","
+//vars.PricebookEntryIds ++ "" ++ payload.Id[0] ++ "\","]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<until-successful maxRetries="5" doc:name="Until Successful" doc:id="84b5c236-8927-4f72-9607-f9dff5581f82" >
+				<salesforce:query doc:name="Query" doc:id="54db7fb4-ca5e-47cc-8929-9e2b1ee3039b" config-ref="SKF_Salesforce_Sandbox">
+				<salesforce:salesforce-query><![CDATA[SELECT Id from Product2 where External_Id__c = ':matnr']]></salesforce:salesforce-query>
+				<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"matnr" : payload.IDTNR[vars.counter-1]
+}]]]></salesforce:parameters>
+			</salesforce:query>
+			</until-successful>
+			<ee:transform doc:name="Transform Message" doc:id="95f39520-caf6-4af9-9284-1f4d9e59fc73">
+				<ee:message>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="productVar"><![CDATA[%dw 2.0
+output application/java
+---
+vars.productVar ++ "\"ProductId\" :" ++ "\"" ++ payload.Id[0] ++ "\","
+//vars.productVar ++ "\"" ++ payload.Id[0] ++ "\","]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</foreach>
+		<set-variable value='#[vars.PricebookEntryIds ++ "}" replace ",}" with("}")]' doc:name="Set Variable" doc:id="a734fbe7-804f-45f6-9933-c6fcdf422dbe" variableName="PricebookEntryIds" />
+		<set-variable value='#[vars.productVar ++ "}" replace ",}" with("}")]' doc:name="Set Variable" doc:id="1ab87cb5-cf7e-4668-bec5-ad5c0d2277ca" variableName="productVar" />
+		<ee:transform doc:name="Transform Message" doc:id="1f401ee7-3505-466d-acb1-28186f021f8a">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+//vars.PricebookEntryIds ++ "}" ++ vars.productVar ++ "}"
+{
+	"PricebookEntryIds": vars.PricebookEntryIds,
+	"ProductIds": vars.productVar
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

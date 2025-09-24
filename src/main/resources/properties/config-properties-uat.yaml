@@ -1,0 +1,39 @@
+Salesforce:
+  Username: integration.user@skflubircation.com.lubuat
+  Password: FaRL9Gi?dn6XM56S
+  SecurityToken: v9xhWs7j2Co5XTxt8hoOTCS1
+  AuthURL: https://test.salesforce.com/services/Soap/u/58.0
+
+http:
+  port: "8081"
+  
+api:
+  instance: "2161924"
+  
+salesareasapi:
+  host: "salesforce-sales-area-uat-sapi-gb1cc.2ky31l-2.deu-c1.eu1.cloudhub.io"
+  port: "443"
+  
+accountssapi:
+  host: "salesforce-accounts-uat-sapi-gb1cc.2ky31l-1.deu-c1.eu1.cloudhub.io"
+  port: "443"
+  
+partnerfuncsapi:
+  host: "salesforce-partner-function-uat-sapi-gb1cc.2ky31l-2.deu-c1.eu1.cloudhub.io"
+  port: "443"
+  
+ordersapi:
+  host: "salesforce-orders-uat-sapi-gb1cc.2ky31l-2.deu-c1.eu1.cloudhub.io"
+  port: "443"
+  
+    
+productsapi:
+  host: "salesforce-products-uat-sapi-gb1cc.2ky31l-2.deu-c1.eu1.cloudhub.io"
+  port: "443"
+
+
+      
+      
+      
+      
+      

@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DEBMAS06>
+   <IDOC BEGIN="1">
+      <EDI_DC40 SEGMENT="1">
+         <TABNAM>EDI_DC40</TABNAM>
+         <MANDT>100</MANDT>
+         <DOCNUM>0000000004451025</DOCNUM>
+         <DOCREL>750</DOCREL>
+         <STATUS>30</STATUS>
+         <DIRECT>1</DIRECT>
+         <OUTMOD>2</OUTMOD>
+         <IDOCTYP>DEBMAS06</IDOCTYP>
+         <MESTYP>DEBMAS</MESTYP>
+         <SNDPOR>SAPX01</SNDPOR>
+         <SNDPRT>LS</SNDPRT>
+         <SNDPRN>X01CLNT100</SNDPRN>
+         <RCVPOR>RFC_DEBMAS</RCVPOR>
+         <RCVPRT>LS</RCVPRT>
+         <RCVPRN>SALESFORCE</RCVPRN>
+         <CREDAT>20240221</CREDAT>
+         <CRETIM>100231</CRETIM>
+         <SERIAL>20240221100231</SERIAL>
+      </EDI_DC40>
+      <E1KNA1M SEGMENT="1">
+         <MSGFN>005</MSGFN>
+         <KUNNR>0000000740</KUNNR>
+         <BBBNR>0000000</BBBNR>
+         <BBSNR>00000</BBSNR>
+         <BUBKZ>0</BUBKZ>
+         <KTOKD>0001</KTOKD>
+         <LAND1>US</LAND1>
+         <NAME1>LINCOLN INDUSTRIAL CORP.</NAME1>
+         <ORT01>ST.LOUIS,MO</ORT01>
+         <PSTLZ>63120</PSTLZ>
+         <SORTL>LINCOLN</SORTL>
+         <SPRAS>E</SPRAS>
+         <STRAS>ONE LINCOLN WAY</STRAS>
+         <TELF1>314/6794200</TELF1>
+         <VBUND>VU</VBUND>
+         <UMJAH>0000</UMJAH>
+         <JMZAH>000000</JMZAH>
+         <JMJAH>0000</JMJAH>
+         <KATR3>Z1</KATR3>
+         <UMSA1>0</UMSA1>
+         <HZUOR>00</HZUOR>
+         <SPRAS_ISO>EN</SPRAS_ISO>
+         <E1KNA11 SEGMENT="1">
+            <SUFRAMA>000000000</SUFRAMA>
+            <RGDATE>00000000</RGDATE>
+            <RIC>00000000000</RIC>
+            <RNEDATE>00000000</RNEDATE>
+            <CNAE>0000000</CNAE>
+            <LEGALNAT>0000</LEGALNAT>
+         </E1KNA11>
+         <E1KNVVM SEGMENT="1">
+            <MSGFN>005</MSGFN>
+            <VKORG>1000</VKORG>
+            <VTWEG>01</VTWEG>
+            <SPART>02</SPART>
+            <VERSG>1</VERSG>
+            <KALKS>2</KALKS>
+            <KDGRP>R</KDGRP>
+            <KONDA>10</KONDA>
+            <PLTYP>58</PLTYP>
+            <AWAHR>100</AWAHR>
+            <INCO1>EXW</INCO1>
+            <INCO2>WALLDORF</INCO2>
+            <ANTLF>9</ANTLF>
+            <KZAZU>X</KZAZU>
+            <LPRIO>00</LPRIO>
+            <WAERS>EUR</WAERS>
+            <KTGRD>02</KTGRD>
+            <ZTERM>D002</ZTERM>
+            <VWERK>1000</VWERK>
+            <VKBUR>0005</VKBUR>
+            <KLABC>A</KLABC>
+            <UEBTO>0.0</UEBTO>
+            <UNTTO>0.0</UNTTO>
+            <PODKZ>X</PODKZ>
+            <PODTG>0</PODTG>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000000740</KUNN2>
+               <PARZA>000</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>AG</PARVW>
+               <KUNN2>0000000740</KUNN2>
+               <PARZA>000</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>RE</PARVW>
+               <KUNN2>0000000740</KUNN2>
+               <PARZA>000</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>RG</PARVW>
+               <KUNN2>0000000740</KUNN2>
+               <PARZA>000</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>ZK</PARVW>
+               <KUNN2>0000000740</KUNN2>
+               <PARZA>000</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>ZM</PARVW>
+               <KUNN2>91000135</KUNN2>
+               <PARZA>000</PARZA>
+            </E1KNVPM>
+            <E1KNVDM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <DOCTP>LD00</DOCTP>
+               <SPRAS>E</SPRAS>
+               <DOANZ>1</DOANZ>
+               <DOVER>3</DOVER>
+               <NACHA>1</NACHA>
+               <SPRAS_ISO>EN</SPRAS_ISO>
+            </E1KNVDM>
+            <E1KNVDM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <DOCTP>AN00</DOCTP>
+               <SPRAS>E</SPRAS>
+               <DOANZ>4</DOANZ>
+               <DOVER>3</DOVER>
+               <NACHA>1</NACHA>
+               <SPRAS_ISO>EN</SPRAS_ISO>
+            </E1KNVDM>
+            <E1KNVDM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <DOCTP>BA00</DOCTP>
+               <SPRAS>E</SPRAS>
+               <DOANZ>5</DOANZ>
+               <DOVER>3</DOVER>
+               <NACHA>1</NACHA>
+               <SPRAS_ISO>EN</SPRAS_ISO>
+            </E1KNVDM>
+            <E1KNVDM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <DOCTP>RD00</DOCTP>
+               <SPRAS>E</SPRAS>
+               <DOANZ>4</DOANZ>
+               <DOVER>4</DOVER>
+               <NACHA>1</NACHA>
+               <SPRAS_ISO>EN</SPRAS_ISO>
+            </E1KNVDM>
+            <E1KNVIM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <ALAND>DE</ALAND>
+               <TATYP>MWST</TATYP>
+               <TAXKD>1</TAXKD>
+            </E1KNVIM>
+            <E1KNVIM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <ALAND>CZ</ALAND>
+               <TATYP>MWST</TATYP>
+               <TAXKD>1</TAXKD>
+            </E1KNVIM>
+            <E1KNVIM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <ALAND>BE</ALAND>
+               <TATYP>MWST</TATYP>
+               <TAXKD>1</TAXKD>
+            </E1KNVIM>
+            <E1KNVIM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <ALAND>FI</ALAND>
+               <TATYP>MWST</TATYP>
+               <TAXKD>1</TAXKD>
+            </E1KNVIM>
+            <E1KNVIM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <ALAND>FR</ALAND>
+               <TATYP>LCFR</TATYP>
+               <TAXKD>1</TAXKD>
+            </E1KNVIM>
+            <E1KNVIM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <ALAND>FR</ALAND>
+               <TATYP>MWST</TATYP>
+               <TAXKD>1</TAXKD>
+            </E1KNVIM>
+         </E1KNVVM>
+         <E1KNVVM SEGMENT="1">
+            <MSGFN>005</MSGFN>
+            <VKORG>1000</VKORG>
+            <VTWEG>01</VTWEG>
+            <SPART>01</SPART>
+            <VERSG>1</VERSG>
+            <KALKS>5</KALKS>
+            <KDGRP>H</KDGRP>
+            <KONDA>10</KONDA>
+            <PLTYP>58</PLTYP>
+            <AWAHR>100</AWAHR>
+            <INCO1>EXW</INCO1>
+            <INCO2>WALLDORF</INCO2>
+            <ANTLF>9</ANTLF>
+            <LPRIO>00</LPRIO>
+            <VSBED>1</VSBED>
+            <WAERS>EUR</WAERS>
+            <KTGRD>12</KTGRD>
+            <ZTERM>D007</ZTERM>
+            <VWERK>1100</VWERK>
+            <VKBUR>0005</VKBUR>
+            <KVGR1>DE</KVGR1>
+            <KLABC>A</KLABC>
+            <UEBTO>0.0</UEBTO>
+            <UNTTO>0.0</UNTTO>
+            <PODKZ>X</PODKZ>
+            <PODTG>0</PODTG>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>AG</PARVW>
+               <KUNN2>0000000740</KUNN2>
+               <PARZA>000</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000300090</KUNN2>
+               <DEFPA>X</DEFPA>
+               <PARZA>000</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>RG</PARVW>
+               <KUNN2>0000000740</KUNN2>
+               <PARZA>000</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>RE</PARVW>
+               <KUNN2>0000000740</KUNN2>
+               <PARZA>000</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>ZK</PARVW>
+               <KUNN2>0000000740</KUNN2>
+               <PARZA>000</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>ZM</PARVW>
+               <KUNN2>91000135</KUNN2>
+               <PARZA>000</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000200013</KUNN2>
+               <PARZA>001</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000200011</KUNN2>
+               <PARZA>002</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000300017</KUNN2>
+               <PARZA>003</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000300719</KUNN2>
+               <PARZA>004</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000300767</KUNN2>
+               <PARZA>005</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000301541</KUNN2>
+               <PARZA>006</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000302364</KUNN2>
+               <PARZA>007</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000302395</KUNN2>
+               <PARZA>008</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000302438</KUNN2>
+               <PARZA>009</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000303042</KUNN2>
+               <PARZA>010</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000303116</KUNN2>
+               <PARZA>011</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000305282</KUNN2>
+               <PARZA>012</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000305319</KUNN2>
+               <PARZA>013</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000301504</KUNN2>
+               <PARZA>014</PARZA>
+            </E1KNVPM>
+            <E1KNVPM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <PARVW>WE</PARVW>
+               <KUNN2>0000306337</KUNN2>
+               <PARZA>015</PARZA>
+            </E1KNVPM>
+            <E1KNVDM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <DOCTP>LD00</DOCTP>
+               <SPRAS>E</SPRAS>
+               <DOANZ>1</DOANZ>
+               <DOVER>3</DOVER>
+               <NACHA>1</NACHA>
+               <SPRAS_ISO>EN</SPRAS_ISO>
+            </E1KNVDM>
+            <E1KNVDM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <DOCTP>RD00</DOCTP>
+               <SPRAS>E</SPRAS>
+               <DOANZ>1</DOANZ>
+               <DOVER>1</DOVER>
+               <NACHA>1</NACHA>
+               <SPRAS_ISO>EN</SPRAS_ISO>
+            </E1KNVDM>
+            <E1KNVDM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <DOCTP>AN00</DOCTP>
+               <SPRAS>E</SPRAS>
+               <DOANZ>1</DOANZ>
+               <DOVER>1</DOVER>
+               <NACHA>1</NACHA>
+               <SPRAS_ISO>EN</SPRAS_ISO>
+            </E1KNVDM>
+            <E1KNVDM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <DOCTP>BA00</DOCTP>
+               <SPRAS>E</SPRAS>
+               <DOANZ>1</DOANZ>
+               <DOVER>1</DOVER>
+               <NACHA>1</NACHA>
+               <SPRAS_ISO>EN</SPRAS_ISO>
+            </E1KNVDM>
+            <E1KNVIM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <ALAND>DE</ALAND>
+               <TATYP>MWST</TATYP>
+               <TAXKD>1</TAXKD>
+            </E1KNVIM>
+            <E1KNVIM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <ALAND>CZ</ALAND>
+               <TATYP>MWST</TATYP>
+               <TAXKD>1</TAXKD>
+            </E1KNVIM>
+            <E1KNVIM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <ALAND>BE</ALAND>
+               <TATYP>MWST</TATYP>
+               <TAXKD>1</TAXKD>
+            </E1KNVIM>
+            <E1KNVIM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <ALAND>FI</ALAND>
+               <TATYP>MWST</TATYP>
+               <TAXKD>1</TAXKD>
+            </E1KNVIM>
+            <E1KNVIM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <ALAND>FR</ALAND>
+               <TATYP>LCFR</TATYP>
+               <TAXKD>1</TAXKD>
+            </E1KNVIM>
+            <E1KNVIM SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <ALAND>FR</ALAND>
+               <TATYP>MWST</TATYP>
+               <TAXKD>1</TAXKD>
+            </E1KNVIM>
+            <E1KNVVH SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <TDOBJECT>KNVV</TDOBJECT>
+               <TDNAME>000000074010000101</TDNAME>
+               <TDID>9004</TDID>
+               <TDSPRAS>E</TDSPRAS>
+               <TDSPRASISO>EN</TDSPRASISO>
+               <E1KNVVL SEGMENT="1">
+                  <MSGFN>005</MSGFN>
+                  <TDFORMAT>*</TDFORMAT>
+                  <TDLINE>kre test1</TDLINE>
+               </E1KNVVL>
+            </E1KNVVH>
+            <E1KNVVH SEGMENT="1">
+               <MSGFN>005</MSGFN>
+               <TDOBJECT>KNVV</TDOBJECT>
+               <TDNAME>000000074010000101</TDNAME>
+               <TDID>Z999</TDID>
+               <TDSPRAS>E</TDSPRAS>
+               <TDSPR />
+            </E1KNVVH>
+         </E1KNVVM>
+      </E1KNA1M>
+   </IDOC>
+</DEBMAS06>

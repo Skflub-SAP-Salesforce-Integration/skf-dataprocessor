@@ -18,7 +18,6 @@
     </flow>
     <flow name="get:\ping:dataprocessor-papi-config">
 		<flow-ref doc:name="salesforce-status-sub-flow" doc:id="ae0abc01-1280-4e83-aa70-d22adb60cc15" name="salesforce-status-sub-flow" />
-		<logger level="INFO" doc:name="Logger" doc:id="2b9b7957-71f7-4ee6-9575-6b0b750682a2" />
     </flow>
     <flow name="post:\account:text\xml:dataprocessor-papi-config">
 		<logger level="INFO" doc:name="Logger" doc:id="38cb674f-31af-49f0-a4f7-9220890397cc" message='#["Received XML from DEBMAS Downstream SAPI"]' />
